@@ -1,0 +1,41 @@
+# --- System Files ---
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# --- Docker & Environment ---
+.env
+.env.local
+.env.*.local
+dist/
+build/
+node_modules/
+__pycache__/
+
+
+
+# --- Frontend (Next.js) ---
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# data source preparing
+data_source_preparing/my_env
+data_source_preparing/venv
+data_source_preparing/*/__pycache__
+
+# --- AI / Python (FastAPI) ---
+ia-traitement/__pycache__/
+ia-traitement/my_env/
+ia-traitement/venv/
+
+
+
+# --- Infrastructure ---
+.docker/
