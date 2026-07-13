@@ -3,7 +3,7 @@ import mlflow.sklearn as mlsk
 
 def run_realtime_prediction():
     # Path to your saved model directory
-    pipeline_path = './ia-traitement/ml_assets/models/nn_mlp_model'
+    pipeline_path = './backend/ml_assets/models/nn_mlp_model'
     
     print("Loading the production pipeline...")
     # MLflow automatically resolves the cloudpickle format and loads both 

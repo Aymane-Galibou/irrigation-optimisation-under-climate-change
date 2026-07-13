@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import date, timedelta
+from datetime import date
 from DSSATTools import DSSAT
 from DSSATTools.crop import Sorghum, Maize
 from DSSATTools.weather import WeatherStation

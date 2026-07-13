@@ -17,7 +17,7 @@ flavors:
     - xgboost.sklearn.XGBRegressor
 mlflow_version: 3.14.0
 model_id: null
-model_size_bytes: 1655489
-model_uuid: 0e69ff7830ff44b29778d84042652977
+model_size_bytes: 1685757
+model_uuid: db322a160395468aa4f12ee1f32ee056
 prompts: null
-utc_time_created: '2026-07-07 12:10:41.856168'
+utc_time_created: '2026-07-13 12:02:47.909187'

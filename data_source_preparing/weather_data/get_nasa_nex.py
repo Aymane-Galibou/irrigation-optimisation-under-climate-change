@@ -17,7 +17,7 @@ def get_nasa_weather(lat,long,sd,ed,cs,cm):
 
     ee.Initialize(project="smart-irrigation-dssat")
 
-    point=ee.Geometry.Point([lat,long])
+    point=ee.Geometry.Point([long,lat])
 
     # getting the whole ImageCollection
     data_set=(
@@ -83,19 +83,3 @@ def get_nasa_weather(lat,long,sd,ed,cs,cm):
     return df_dssat_ready
 
 
-if __name__ == "__main__":
-    # defining our field 
-    latitude = 32.336
-    longitude = -6.295
-
-    # weather periode from .. to ..
-    start_date = '2028-01-01'
-    end_date = '2060-12-31'
-
-    # climate change variable
-    climate_scenario = 'ssp245'
-    climate_model = 'ACCESS-CM2'
-
-    results = get_nasa_weather(latitude,longitude,start_date,end_date,climate_scenario,climate_model)
-
-    print(results.head())

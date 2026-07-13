@@ -86,7 +86,7 @@ def training_evaluating_saving_model(data:pd.DataFrame):
     print(f" -> R2 Score  : {r2:.4f}")
     print("======================================================")
 
-    pipeline_path = './ia-traitement/ml_assets/models/xgboost_model'
+    pipeline_path = './backend/ml_assets/models/xgboost_model'
     mlsk.save_model(
         sk_model=production_pipeline,
         path=pipeline_path,
@@ -101,5 +101,5 @@ def training_evaluating_saving_model(data:pd.DataFrame):
 
 # --- Point d'entrée du script ---
 if __name__ == "__main__":
-    final_dataset = pd.read_csv('./ia-traitement/ml_assets/data/xdata.csv')
+    final_dataset = pd.read_csv('./backend/ml_assets/data/xdata.csv')
     training_evaluating_saving_model(final_dataset)

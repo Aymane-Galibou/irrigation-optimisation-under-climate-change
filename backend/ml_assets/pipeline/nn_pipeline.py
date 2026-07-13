@@ -149,7 +149,7 @@ def train_evaluate_save_nn(ml_ready_dataset: pd.DataFrame, epochs=100, batch_siz
     print(f" -> Root Mean Squared Error  : {rmse:.4f} mm")
     print(f" -> R2 Score   : {r2:.4f}")
 
-    pipeline_path = './ia-traitement/ml_assets/models/nn_mlp_model'
+    pipeline_path = './backend/ml_assets/models/nn_mlp_model'
     mlsk.save_model(
         sk_model=production_pipeline,
         path=pipeline_path,
@@ -157,5 +157,5 @@ def train_evaluate_save_nn(ml_ready_dataset: pd.DataFrame, epochs=100, batch_siz
     )
 
 if __name__ == "__main__":
-    final_dataset = pd.read_csv('./ia-traitement/ml_assets/data/xdata.csv')
+    final_dataset = pd.read_csv('./backend/ml_assets/data/xdata.csv')
     train_evaluate_save_nn(final_dataset, epochs=100)
