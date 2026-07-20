@@ -1,66 +1,50 @@
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
-
-interface weatherType {
-    feature_crop: string;
-    feature_soil: string;
-    feature_year: number;
-    dap: number;
-    doy: number;
-    tmin: number;
-    tmax: number;
-    srad: number;
-    rain: number;
-    prev_day_deficit_mm: number;
-}
-
-interface RecordWeather {
-    weather: weatherType;
-    time: string;
-    xgboostPrediction: number;
-    nnMlpPrediction: number;
-}
+import { RecordWeather } from "@/interfaces/weatherInterface";
 
 // const  {feature_crop,feature_soil,feature_year,dap,doy,tmin,tmax,srad,rain,prev_day_deficit_mm}=payload
 
 export default function useSocketWeather({ url }: { url: string }) {
-    const [status, setStatus] = useState<"connected" | "disconnected">("disconnected",);
+  const [status, setStatus] = useState<"connected" | "disconnected">(
+    "disconnected",
+  );
 
-    const [weatherData, setweatherData] = useState<RecordWeather>();
+  const [weatherData, setweatherData] = useState<RecordWeather>();
 
+  useEffect(() => {
     const handleWeatherEmit = (payload: any) => {
-        const { weather, xgboostPrediction, nnMlpPrediction, time } = payload.data;
-        console.log(weather)
+      const { weather, xgboostPrediction, nnMlpPrediction, time } =
+        payload.data;
+      console.log(weather);
 
-        const record = {
-            weather,
-            time,
-            xgboostPrediction,
-            nnMlpPrediction,
-        };
-        console.log(record)
+      const record = {
+        weather,
+        time,
+        xgboostPrediction,
+        nnMlpPrediction,
+      };
+      console.log(record);
 
-        setweatherData(record);
+      setweatherData(record);
     };
+    const socket = io(url, {
+      path: "/ws/socket.io/",
+      transports: ["websocket"],
+      withCredentials: true,
+    });
 
-    useEffect(() => {
-        const socket = io(url, {
-            path: "/ws/socket.io/",
-            transports: ["websocket"],
-            withCredentials: true,
-        });
+    socket.on("connect", () => setStatus("connected"));
 
-        socket.on("connect", () => setStatus("connected"));
+    socket.on("disconnect", () => {
+      setStatus("disconnected");
+    });
+    socket.on("weather-emit", handleWeatherEmit);
 
-        socket.on("disconnected", () => setStatus("disconnected"));
+    return () => {
+      socket.off("weather-emit", handleWeatherEmit);
+      socket.disconnect();
+    };
+  }, [url]);
 
-        socket.on("weather-emit", handleWeatherEmit);
-
-        return () => {
-            socket.off("weather-emit", handleWeatherEmit);
-            socket.disconnect();
-        };
-    }, [url, handleWeatherEmit]);
-
-    return { weatherData, status };
+  return { weatherData, status };
 }

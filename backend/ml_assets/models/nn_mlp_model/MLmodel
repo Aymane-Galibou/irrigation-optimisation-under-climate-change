@@ -1,21 +1,24 @@
 flavors:
   python_function:
+    artifacts:
+      preprocessor:
+        path: artifacts/preprocessor.joblib
+        uri: /tmp/model_parts/preprocessor.joblib
+      pytorch_weights:
+        path: artifacts/nn_model_weights.pth
+        uri: /tmp/model_parts/nn_model_weights.pth
+    cloudpickle_version: 3.1.2
+    code: null
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.sklearn
-    model_path: model.pkl
-    predict_fn: predict
+    loader_module: mlflow.pyfunc.model
+    python_model: python_model.pkl
     python_version: 3.14.4
-  sklearn:
-    code: null
-    pickled_model: model.pkl
-    serialization_format: cloudpickle
-    sklearn_version: 1.9.0
-    skops_trusted_types: null
+    streamable: false
 mlflow_version: 3.14.0
 model_id: null
-model_size_bytes: 24785
-model_uuid: 030b0352220d4e4a97ae0f6e1219feef
+model_size_bytes: 26288
+model_uuid: 05d0727ee50e4c9786cb5a2f1cba3b51
 prompts: null
-utc_time_created: '2026-07-13 12:10:26.689295'
+utc_time_created: '2026-07-14 21:46:55.121931'

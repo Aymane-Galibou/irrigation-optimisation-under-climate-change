@@ -5,7 +5,6 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     restart: always
@@ -31,23 +30,32 @@ services:
     build: 
       context: ./backend
     image: aymanelgmada/smart-irrigation:backend-v1
+    depends_on:
+      - kafka
+      - influxdb
     ports:
       - "8000:8000"
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - KAFKA_TOPIC=weathertopic
       - WATCHFILES_FORCE_POLLING=true
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=my-secret-token 
+      - INFLUXDB_ORG=smart-irrig
+      - INFLUXDB_BUCKET=meteo_history
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/venv
       - /usr/src/app/__pycache__
-    
+    security_opt:
+      - seccomp:unconfined
   frontend:
     build: 
       context: ./frontend
     image: aymanelgmada/smart-irrigation:frontend-v1
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_BACKEND_URL_SERVER=http://backend:8000
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
@@ -56,3 +64,18 @@ services:
       - backend
     ports:
       - "3000:3000"
+  influxdb:
+    image: influxdb:2
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword 
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-secret-token 
+      - DOCKER_INFLUXDB_INIT_ORG=smart-irrig
+      - DOCKER_INFLUXDB_INIT_BUCKET=meteo_history
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+volumes:
+  influxdb_data:

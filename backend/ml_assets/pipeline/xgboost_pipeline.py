@@ -48,6 +48,8 @@ def training_evaluating_saving_model(data:pd.DataFrame):
 
     # initializing the xgboost
     xgb_model = xgb.XGBRegressor(
+        objective='reg:tweedie',
+        tweedie_variance_power=1.5, # 1.5 is standard for zero-inflated physical metrics
         n_estimators=300,
         max_depth=6,
         learning_rate=0.05,
