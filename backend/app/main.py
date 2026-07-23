@@ -62,13 +62,22 @@ socket_app = socketio.ASGIApp(
     socketio_server=sio,
     socketio_path=""
 )
-frontend_domain = os.getenv("FRONT_END_DOMAIN")
+
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:4000",
-    frontend_domain
 ]
+
+# Safely append frontend domain if provided
+frontend_domain = os.getenv("FRONT_END_DOMAIN")
+if frontend_domain:
+    # Ensure protocol is present
+    if not frontend_domain.startswith(("http://", "https://")):
+        origins.append(f"http://{frontend_domain}")
+        origins.append(f"https://{frontend_domain}")
+    else:
+        origins.append(frontend_domain)
 
 app.add_middleware(
     CORSMiddleware,
