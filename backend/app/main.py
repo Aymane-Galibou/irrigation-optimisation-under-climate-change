@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import asyncio
 import socketio
 from datetime import datetime
-
+import os 
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=[
@@ -62,10 +62,12 @@ socket_app = socketio.ASGIApp(
     socketio_server=sio,
     socketio_path=""
 )
-
+frontend_domain = os.getenv("FRONT_END_DOMAIN")
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:4000",
+    frontend_domain
 ]
 
 app.add_middleware(
