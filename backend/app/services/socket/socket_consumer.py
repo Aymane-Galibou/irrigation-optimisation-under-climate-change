@@ -83,6 +83,7 @@ async def socket_consumer_loop(sio,app):
     "group.id": "socket_group",  
     "auto.offset.reset": "latest",  
     "enable.auto.commit": False,
+    'ssl.ca.location': '/etc/ssl/certs/ca-certificates.crt',
     }
 
     TOPIC = os.getenv("KAFKA_TOPIC")

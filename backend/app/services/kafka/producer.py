@@ -6,14 +6,15 @@ import pandas as pd
 
 async def run_producer(app):
     TOPIC = os.getenv("KAFKA_TOPIC")
-
-    producer = AIOProducer(
-    bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
-    security_protocol="SASL_SSL",
-    sasl_mechanism="PLAIN",
-    sasl_plain_username=os.getenv("KAFKA_SASL_USERNAME"),
-    sasl_plain_password=os.getenv("KAFKA_SASL_PASSWORD"),
-)
+    config = {
+    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+    'security.protocol': 'SASL_SSL',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': os.getenv("KAFKA_SASL_USERNAME"),
+    'sasl.password': os.getenv("KAFKA_SASL_PASSWORD"),
+    'ssl.ca.location': '/etc/ssl/certs/ca-certificates.crt',
+}
+    producer = AIOProducer(config)
 
     def on_delivery(err, msg):
         if err:
