@@ -1,31 +1,32 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PYTHONPATH=/usr/src/app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Application source code in the container
+# application source code in the container
 WORKDIR /usr/src/app
 
-# Install system dependencies needed for compiling C extensions (librdkafka, gcc, etc.)
+# Install system build tools & C libraries needed for confluent-kafka / C extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     g++ \
+    pkg-config \
     librdkafka-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt to destination
+# copy the requirements.txt to the destination folder
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
+# copy the rest of code 
 COPY . .
 
-# Expose port 8000
+# expose the port 
 EXPOSE 8000
 
-# Run FastAPI (specifying host and app path explicitly)
+# running fastapi bound to all network interfaces (0.0.0.0)
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
