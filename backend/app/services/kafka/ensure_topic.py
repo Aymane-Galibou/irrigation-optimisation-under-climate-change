@@ -13,6 +13,8 @@ def ensure_topic_exists():
         "sasl.mechanism": os.getenv("KAFKA_SASL_MECHANISM", "PLAIN"),
         "sasl.username": os.getenv("KAFKA_SASL_USERNAME"),
         "sasl.password": os.getenv("KAFKA_SASL_PASSWORD"),
+        'ssl.ca.location': '/etc/ssl/certs/ca-certificates.crt',
+
     }
 
     admin = AdminClient(admin_config)
