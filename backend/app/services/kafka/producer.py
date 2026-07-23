@@ -12,8 +12,8 @@ async def run_producer(app):
     'sasl.mechanism': 'PLAIN',
     'sasl.username': os.getenv("KAFKA_SASL_USERNAME"),
     'sasl.password': os.getenv("KAFKA_SASL_PASSWORD"),
-    'ssl.ca.location': '/etc/ssl/certs/ca-certificates.crt',
-}
+    'ssl.ca.location': '/usr/src/app/ca.pem',
+    }
     producer = AIOProducer(config)
 
     def on_delivery(err, msg):

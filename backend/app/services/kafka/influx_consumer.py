@@ -40,7 +40,7 @@ async def influx_consumer_loop():
             "sasl.mechanism": os.getenv("KAFKA_SASL_MECHANISM", "PLAIN"),
             "sasl.username": os.getenv("KAFKA_SASL_USERNAME"),
             "sasl.password": os.getenv("KAFKA_SASL_PASSWORD"),
-            'ssl.ca.location': '/etc/ssl/certs/ca-certificates.crt',
+            'ssl.ca.location': '/usr/src/app/ca.pem',
 
             "group.id": "influx_group",
             "auto.offset.reset": "earliest",
