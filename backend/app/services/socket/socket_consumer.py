@@ -72,15 +72,19 @@ async def ml_analytics(data_dict: dict, sio, xgboost_model,app):
 
 async def socket_consumer_loop(sio,app):
     consumer_config = {
-    "bootstrap_servers":os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
-    "security_protocol":"SASL_SSL",
-    "sasl_mechanism":"PLAIN",
-    "sasl_plain_username":os.getenv("KAFKA_SASL_USERNAME"),
-    "sasl_plain_password":os.getenv("KAFKA_SASL_PASSWORD"),
-    "group.id": "socket_group",
-    "auto.offset.reset": "latest",
+    # Confluent Cloud Broker & SSL
+    "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+    "security.protocol": "SASL_SSL",
+    "sasl.mechanism": os.getenv("KAFKA_SASL_MECHANISM", "PLAIN"),
+    "sasl.username": os.getenv("KAFKA_SASL_USERNAME"),
+    "sasl.password": os.getenv("KAFKA_SASL_PASSWORD"),
+    
+    # Consumer Group settings
+    "group.id": "socket_group",  
+    "auto.offset.reset": "latest",  
     "enable.auto.commit": False,
     }
+
     TOPIC = os.getenv("KAFKA_TOPIC")
 
     consumer = Consumer(consumer_config)

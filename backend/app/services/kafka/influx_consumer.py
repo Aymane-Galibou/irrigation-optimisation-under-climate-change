@@ -35,11 +35,12 @@ async def influx_consumer_loop():
         write_api=client.write_api()
         # configuring kafka 
         config = {
-            "bootstrap_servers":os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
-            "security_protocol":"SASL_SSL",
-            "sasl_mechanism":"PLAIN",
-            "sasl_plain_username":os.getenv("KAFKA_SASL_USERNAME"),
-            "sasl_plain_password":os.getenv("KAFKA_SASL_PASSWORD"),
+           "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+            "security.protocol": "SASL_SSL",
+            "sasl.mechanism": os.getenv("KAFKA_SASL_MECHANISM", "PLAIN"),
+            "sasl.username": os.getenv("KAFKA_SASL_USERNAME"),
+            "sasl.password": os.getenv("KAFKA_SASL_PASSWORD"),
+
             "group.id": "influx_group",
             "auto.offset.reset": "earliest",
             "enable.auto.commit": False
