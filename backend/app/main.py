@@ -9,12 +9,27 @@ import asyncio
 import socketio
 from datetime import datetime
 import os 
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:4000",
+]
+
+# Safely append frontend domain if provided
+frontend_domain = os.getenv("FRONT_END_DOMAIN")
+if frontend_domain:
+    # Ensure protocol is present
+    if not frontend_domain.startswith(("http://", "https://")):
+        origins.append(f"http://{frontend_domain}")
+        origins.append(f"https://{frontend_domain}")
+    else:
+        origins.append(frontend_domain)
+
+
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ])
+    cors_allowed_origins=origins)
 
 API_V="/api/v1"
 
@@ -63,21 +78,7 @@ socket_app = socketio.ASGIApp(
     socketio_path=""
 )
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:4000",
-]
 
-# Safely append frontend domain if provided
-frontend_domain = os.getenv("FRONT_END_DOMAIN")
-if frontend_domain:
-    # Ensure protocol is present
-    if not frontend_domain.startswith(("http://", "https://")):
-        origins.append(f"http://{frontend_domain}")
-        origins.append(f"https://{frontend_domain}")
-    else:
-        origins.append(frontend_domain)
 
 app.add_middleware(
     CORSMiddleware,
