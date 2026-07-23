@@ -13,15 +13,28 @@ export default function useSocketWeather({ url }: { url: string }) {
 
   useEffect(() => {
     const handleWeatherEmit = (payload: any) => {
-      const { weather, xgboostPrediction, nnMlpPrediction, time } =
-        payload.data;
+      const { 
+        weather, 
+        time ,
+        predicted_deficit_mm:predictedDeficitMm, 
+        status_level:statusLevel,
+        title,
+        message,
+        action_required:actionRequired,
+        recommended_water_mm:recommendedWaterMm,
+      } = payload.data;
+      
       console.log(weather);
 
       const record = {
         weather,
         time,
-        xgboostPrediction,
-        nnMlpPrediction,
+        predictedDeficitMm,
+        statusLevel,
+        title,
+        message,
+        actionRequired,
+        recommendedWaterMm,
       };
       console.log(record);
 

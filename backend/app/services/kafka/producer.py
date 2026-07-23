@@ -2,17 +2,18 @@ import os
 import json
 import asyncio
 from confluent_kafka.aio import AIOProducer
-from app.services.data_simulator.script import fetch_real_weather_data
+import pandas as pd 
 
-
-
-async def run_producer():
-    KAFKA_BROKER = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+async def run_producer(app):
     TOPIC = os.getenv("KAFKA_TOPIC")
 
     producer = AIOProducer(
-        {"bootstrap.servers": KAFKA_BROKER, "client.id": "weather-data-producer"}
-    )
+    bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+    security_protocol="SASL_SSL",
+    sasl_mechanism="PLAIN",
+    sasl_plain_username=os.getenv("KAFKA_SASL_USERNAME"),
+    sasl_plain_password=os.getenv("KAFKA_SASL_PASSWORD"),
+)
 
     def on_delivery(err, msg):
         if err:
@@ -20,19 +21,52 @@ async def run_producer():
         else:
             print(f"[Producer] Message delivered to {msg.topic()} [{msg.partition()}]")
 
-    try:
-        while True:
-            try:
-                raw_data = await fetch_real_weather_data()
+    feature_crop = app.state.feature_crop
 
-                payload = json.dumps(raw_data).encode("utf-8")
+    # preaparing data block 
+    try:
+        # loading the dataset
+        df = pd.read_csv("./app/services/data_simulator/weather.csv")
+        
+        # loading the planting date from the state 
+        planting_date = app.state.planting_date
+
+        # calculating the DAP
+        DOY_planting = int(planting_date.strftime('%j'))
+        df['DAP'] = df['DOY'] - DOY_planting
+
+        # keeping only the crop season 
+        df = df[df['DAP'] >= 0]
+
+    except Exception as e : 
+        print(f"there is a probleme while transforming this data {e}")
+
+
+    try:
+        for index, row in df.iterrows():
+            try:
+                # building the payload 
+                data_formated = {
+                    "feature_crop": feature_crop,
+                    "feature_soil": 'Tirs_Clay',
+                    "feature_year": int(row['YEAR']),
+                    "DAP": int(row['DAP']),
+                    "DOY": int(row["DOY"]),
+                    "tmin": float(row['tmin']),
+                    "tmax": float(row['tmax']),
+                    "srad": float(row['srad']),
+                    "rain": float(row['rain']),
+                    "prev_day_deficit_mm": float(app.state.prev_deficit_mm,)
+                }
+                payload = json.dumps(data_formated).encode("utf-8")
 
                 await producer.produce(
                     topic=TOPIC, value=payload, callback=on_delivery
                 )
                 print("🚀 Message envoyé pour la station")
 
-                await asyncio.sleep(2)
+                # waiting 6 seconds 
+                await asyncio.sleep(6)
 
             except Exception as e:
                 print(f"PROBLEME WITH KAFKA PRODUCER --- : {e}")

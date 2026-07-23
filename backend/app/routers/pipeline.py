@@ -22,7 +22,7 @@ async def turn_on_pipeline(request:Request):
             else:
                 print("Previous pipeline finished its work successfully.")
 
-    request.app.state.pipeline_task = create_task(run_producer())
+    request.app.state.pipeline_task = create_task(run_producer(request.app))
     return {"ok": True, "message": "Pipeline started"}
 
 

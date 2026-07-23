@@ -42,7 +42,7 @@ def get_nasa_weather(lat,long,sd,ed,cs,cm):
     start_year = datetime.strptime(sd, "%Y-%m-%d").year
     end_year = datetime.strptime(ed, "%Y-%m-%d").year
 
-    # Loop year by year from 2028 to 2060 (otherwise we will get an accumulation error)
+    # Loop year by year from sd to ed (otherwise we will get an accumulation error)
     for year in range(start_year, end_year + 1):
         print(f"Extracting climate projections for year: {year}...")
         

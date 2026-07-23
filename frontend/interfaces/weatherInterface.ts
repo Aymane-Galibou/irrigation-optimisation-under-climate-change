@@ -18,8 +18,12 @@ export interface weatherType {
 export interface RecordWeather {
   weather: weatherType;
   time: string;
-  xgboostPrediction: number;
-  nnMlpPrediction: number;
+  predictedDeficitMm: number;
+  statusLevel:string;
+  title:string;
+  message:string;
+  actionRequired:boolean;
+  recommendedWaterMm: number;
 }
 
 

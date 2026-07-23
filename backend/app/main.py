@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.kafka.ensure_topic import ensure_topic_exists
 from app.services.socket.socket_consumer import socket_consumer_loop
 from app.services.kafka.influx_consumer import influx_consumer_loop
+from app.routers import history,pipeline,simulations
 from contextlib import asynccontextmanager
 import asyncio
 import socketio
-from app.routers import history,pipeline,simulations
-
+from datetime import datetime
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
@@ -20,11 +20,16 @@ API_V="/api/v1"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.feature_crop = 'Maize'
+    # same thing fore maize & Sorghum 
+    app.state.planting_date = datetime(2025, 5, 10)
+    
+    app.state.prev_deficit_mm = 0
     app.state.pipeline_task = None
 
     await asyncio.to_thread(ensure_topic_exists)
 
-    app.state.socket_task= asyncio.create_task(socket_consumer_loop(sio))  
+    app.state.socket_task= asyncio.create_task(socket_consumer_loop(sio,app))  
     app.state.influx_task=asyncio.create_task(influx_consumer_loop())
 
     print("Consumers are live 🚀")
@@ -34,7 +39,7 @@ async def lifespan(app: FastAPI):
     print("Shutting down...🛑")
     tasks = [
         app.state.pipeline_task,
-        # app.state.socket_task,
+        app.state.socket_task,
         app.state.influx_task
     ]
     active = [t for t in tasks if t and not t.done()]

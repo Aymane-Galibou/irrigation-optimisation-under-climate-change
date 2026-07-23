@@ -8,22 +8,58 @@ from confluent_kafka import Consumer, KafkaException, KafkaError, OFFSET_END
 import mlflow.pyfunc as mlpy
 
 
-async def ml_analytics(data_dict: dict, sio, xgboost_model, nn_mlp_model):
+async def ml_analytics(data_dict: dict, sio, xgboost_model,app):
     try:
         raw_time_data = pd.DataFrame([data_dict])
-        xgb_pred, nn_pred = await asyncio.gather(
-            asyncio.to_thread(xgboost_model.predict, raw_time_data),
-            asyncio.to_thread(nn_mlp_model.predict, raw_time_data)
-            )
-
+        xgb_pred = await asyncio.to_thread(xgboost_model.predict, raw_time_data)
+        
         xgb_val = xgb_pred.tolist() if hasattr(xgb_pred, "tolist") else xgb_pred
-        nn_val = nn_pred.tolist() if hasattr(nn_pred, "tolist") else nn_pred
 
+        xgb_pred = xgb_val[0] if isinstance(xgb_val, list) else xgb_val
+
+
+        deficit_mm = round(float(xgb_pred), 2)
+
+        app.state.prev_deficit_mm = deficit_mm
+
+        if deficit_mm < 5.0:
+            status_level = "success"  # Green UI theme
+            title = "Optimal Moisture"
+            message = (f"Soil water levels are optimal ({deficit_mm} mm deficit). No action needed.")
+            action_required = False
+            recommended_water_mm = 0.0
+
+        elif 5.0 <= deficit_mm < 15.0:
+            status_level = "info"  # Blue UI theme
+            title = "Normal Condition"
+            message = f"Minor moisture deficit ({deficit_mm} mm). Irrigation is optional."
+            action_required = False
+            recommended_water_mm = 0.0
+
+        elif 15.0 <= deficit_mm < 30.0:
+            status_level = "warning"  # Amber/Orange UI theme
+            title = "Moderate Water Stress"
+            message = f"Moisture deficit has reached {deficit_mm} mm. Plan an irrigation cycle soon."
+            action_required = True
+            recommended_water_mm = deficit_mm
+
+        else:  
+            status_level = "danger"  # Red UI theme
+            title = "Critical Deficit"
+            message = f"Critical threshold exceeded ({deficit_mm} mm)! Immediate irrigation required to prevent crop yield loss."
+            action_required = True
+            recommended_water_mm = deficit_mm
+
+        
         payload = {
             "weather": data_dict,
             "time": datetime.now().isoformat(),
-            "xgboostPrediction": xgb_val[0] if isinstance(xgb_val, list) else xgb_val,
-            "nnMlpPrediction": nn_val[0] if isinstance(nn_val, list) else nn_val,
+            "predicted_deficit_mm": deficit_mm,
+            "status_level": status_level, 
+            "title": title,
+            "message": message,
+            "action_required": action_required,
+            "recommended_water_mm": recommended_water_mm,
         }
 
         # Emit the payload safely on the active event loop
@@ -34,12 +70,16 @@ async def ml_analytics(data_dict: dict, sio, xgboost_model, nn_mlp_model):
         print(f"❌ Something went wrong during prediction: {e}")
 
 
-async def socket_consumer_loop(sio):
+async def socket_consumer_loop(sio,app):
     consumer_config = {
-        "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
-        "group.id": "socket_group",
-        "auto.offset.reset": "latest",
-        "enable.auto.commit": False,
+    "bootstrap_servers":os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+    "security_protocol":"SASL_SSL",
+    "sasl_mechanism":"PLAIN",
+    "sasl_plain_username":os.getenv("KAFKA_SASL_USERNAME"),
+    "sasl_plain_password":os.getenv("KAFKA_SASL_PASSWORD"),
+    "group.id": "socket_group",
+    "auto.offset.reset": "latest",
+    "enable.auto.commit": False,
     }
     TOPIC = os.getenv("KAFKA_TOPIC")
 
@@ -61,7 +101,6 @@ async def socket_consumer_loop(sio):
 
     # loading models
     xgb_model = None
-    nn_model = None
     print("🧠 [Diagnostic] Starting Model Loading...")
 
     try:
@@ -69,16 +108,10 @@ async def socket_consumer_loop(sio):
         xgb_model = mlsk.load_model(model_uri="./ml_assets/models/xgboost_model")
         print("✅ XGBoost Loaded!")
 
-        print("🔍 Loading NN MLP...")
-        nn_model = mlpy.load_model(model_uri="./ml_assets/models/nn_mlp_model")
-        print("✅ NN MLP Loaded!")
-
     except Exception as e:
         print(f"❌ Failed to load models: {e}")
         consumer.close()
         return
-
-
 
     try:
         while True:
@@ -94,7 +127,7 @@ async def socket_consumer_loop(sio):
 
             data_dict = json.loads(msg.value().decode("utf-8"))
 
-            await ml_analytics(data_dict, sio, xgb_model, nn_model)
+            await ml_analytics(data_dict, sio, xgb_model,app)
 
             consumer.commit(asynchronous=True)
 
