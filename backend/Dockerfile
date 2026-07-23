@@ -7,15 +7,15 @@ ENV PYTHONUNBUFFERED=1
 # application source code in the container
 WORKDIR /usr/src/app
 
-# Install system build tools & C libraries needed for confluent-kafka / C extensions
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     g++ \
     pkg-config \
     librdkafka-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-
 # copy the requirements.txt to the destination folder
 COPY requirements.txt .
 
